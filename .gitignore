@@ -1,0 +1,18 @@
+# build output
+toofan
+
+# editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# os
+.DS_Store
+Thumbs.db
+
+# go
+*.exe
+*.test
+*.out
