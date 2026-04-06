@@ -156,9 +156,9 @@ func renderList(p theme.Palette, title string, items []string, suffixes []string
 		}
 
 		if i == cur {
-			rows = append(rows, sel.Render(" > "+display))
+			rows = append(rows, sel.Render(" ● "+display))
 		} else {
-			rows = append(rows, dim.Render("   "+display))
+			rows = append(rows, dim.Render(" ○ "+display))
 		}
 	}
 

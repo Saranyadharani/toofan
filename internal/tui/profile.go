@@ -20,7 +20,8 @@ type profileData struct {
 	Best      map[string]map[int]float64 // mode -> dur -> wpm
 	Recent    []testEntry
 	Activity  map[string]int
-	RecentAvg float64
+	RecentAvg     float64
+	RecentCodeAvg float64
 }
 
 type testEntry struct {
@@ -83,18 +84,42 @@ func loadProfile() profileData {
 		pd.Recent = all
 	}
 
-	if len(all) >= 10 {
+	var wordsTests []testEntry
+	var codeTests []testEntry
+	for _, e := range all {
+		if !strings.HasPrefix(e.Mode, "code:") {
+			wordsTests = append(wordsTests, e)
+		} else {
+			codeTests = append(codeTests, e)
+		}
+	}
+
+	if len(wordsTests) >= 10 {
 		sum := 0.0
-		for i := len(all) - 10; i < len(all); i++ {
-			sum += all[i].WPM
+		for i := len(wordsTests) - 10; i < len(wordsTests); i++ {
+			sum += wordsTests[i].WPM
 		}
 		pd.RecentAvg = sum / 10.0
-	} else if len(all) > 0 {
+	} else if len(wordsTests) > 0 {
 		sum := 0.0
-		for _, e := range all {
+		for _, e := range wordsTests {
 			sum += e.WPM
 		}
-		pd.RecentAvg = sum / float64(len(all))
+		pd.RecentAvg = sum / float64(len(wordsTests))
+	}
+
+	if len(codeTests) >= 10 {
+		sum := 0.0
+		for i := len(codeTests) - 10; i < len(codeTests); i++ {
+			sum += codeTests[i].WPM
+		}
+		pd.RecentCodeAvg = sum / 10.0
+	} else if len(codeTests) > 0 {
+		sum := 0.0
+		for _, e := range codeTests {
+			sum += e.WPM
+		}
+		pd.RecentCodeAvg = sum / float64(len(codeTests))
 	}
 
 	return pd
@@ -170,30 +195,16 @@ func cleanLegacyLang(lang string) string {
 func rank(wpm float64) string {
 	switch {
 	case wpm >= 120:
-		return "phantom"
+		return "toofan"
 	case wpm >= 80:
-		return "demon"
+		return "tryhard"
 	case wpm >= 50:
-		return "survivor"
+		return "mid"
 	case wpm >= 30:
-		return "warrior"
+		return "noob"
 	default:
 		return "grandma"
 	}
-}
-
-func (m model) bestRow(label string, data map[int]float64, dim, val, hi lipgloss.Style) string {
-	const cw = 5
-	const lw = 7
-	cells := []string{col(lw, hi.Render(label))}
-	for _, d := range []int{15, 30, 60, 120} {
-		if wpm, ok := data[d]; ok {
-			cells = append(cells, col(cw, val.Render(fmt.Sprintf("%.0f", wpm))))
-		} else {
-			cells = append(cells, col(cw, dim.Render("-")))
-		}
-	}
-	return lipgloss.JoinHorizontal(lipgloss.Left, cells...)
 }
 
 func (m model) viewProfile(p theme.Palette) string {
@@ -201,14 +212,10 @@ func (m model) viewProfile(p theme.Palette) string {
 	val := lipgloss.NewStyle().Foreground(p.Typed).Bold(true)
 	hi := lipgloss.NewStyle().Foreground(p.Accent)
 
-	rankLabel := ""
-	if m.prof.Tests > 0 {
-		rankLabel = " · " + rank(m.prof.RecentAvg)
-	}
-	title := val.Render("_toofan" + rankLabel)
+	title := val.Render("_toofan")
 
-	fullWidth := 76
-	if m.width > 0 && m.width < 82 {
+	fullWidth := 86
+	if m.width > 0 && m.width < 92 {
 		fullWidth = m.width - 6
 	}
 	paneWidth := (fullWidth - 2) / 3 // 2 gaps of 1 char each
@@ -218,75 +225,131 @@ func (m model) viewProfile(p theme.Palette) string {
 		BorderForeground(p.Foreground).
 		Padding(1, 2)
 
+	innerWidth := paneWidth - 6
+	if innerWidth < 20 {
+		innerWidth = 20
+	}
+
 	hours := int(m.prof.Time.Hours())
 	mins := int(m.prof.Time.Minutes()) % 60
-	timeStr := fmt.Sprintf("%dm", mins)
+	timeVal := fmt.Sprintf("%d", mins)
+	timeUnit := "m"
 	if hours > 0 {
-		timeStr = fmt.Sprintf("%dh %dm", hours, mins)
+		timeVal = fmt.Sprintf("%dh %d", hours, mins)
 	}
 
-	avgStr := dim.Render("-")
-	if m.prof.Tests > 0 {
-		avgStr = val.Render(fmt.Sprintf("%.0f wpm", m.prof.RecentAvg))
+	wordsAvgVal := "-"
+	wordsAvgUnit := ""
+	if m.prof.RecentAvg > 0 {
+		wordsAvgVal = fmt.Sprintf("%.0f", m.prof.RecentAvg)
+		wordsAvgUnit = "wpm"
 	}
 
-	avgAccStr := dim.Render("-")
+	codeAvgVal := "-"
+	codeAvgUnit := ""
+	if m.prof.RecentCodeAvg > 0 {
+		codeAvgVal = fmt.Sprintf("%.0f", m.prof.RecentCodeAvg)
+		codeAvgUnit = "wpm"
+	}
+
+	accVal := "-"
+	accUnit := ""
 	if len(m.prof.Recent) > 0 {
 		var totalAcc float64
 		for _, e := range m.prof.Recent {
 			totalAcc += e.Acc
 		}
-		avgAccStr = val.Render(fmt.Sprintf("%.0f%%", totalAcc/float64(len(m.prof.Recent))))
+		accVal = fmt.Sprintf("%.0f", totalAcc/float64(len(m.prof.Recent)))
+		accUnit = "%"
+	}
+
+	formatRow := func(k, v, u string) string {
+		formattedVal := v + u
+
+		keyBlock := lipgloss.NewStyle().Width(13).Align(lipgloss.Left).Render(dim.Render(k))
+		valBlock := lipgloss.NewStyle().Width(8).Align(lipgloss.Left).Render(val.Render(formattedVal))
+
+		return lipgloss.JoinHorizontal(lipgloss.Left, keyBlock, valBlock)
 	}
 
 	overview := lipgloss.JoinVertical(lipgloss.Left,
 		hi.Render("overview"),
 		"",
-		dim.Render("tests  ")+val.Render(fmt.Sprintf("%d", m.prof.Tests)),
-		dim.Render("time   ")+val.Render(timeStr),
-		dim.Render("avg    ")+avgStr,
-		dim.Render("acc    ")+avgAccStr,
+		formatRow("tests", fmt.Sprintf("%d", m.prof.Tests), ""),
+		formatRow("time", timeVal, timeUnit),
+		formatRow("words avg", wordsAvgVal, wordsAvgUnit),
+		formatRow("code avg", codeAvgVal, codeAvgUnit),
+		formatRow("accuracy", accVal, accUnit),
 	)
 
-	const cw = 5
-	const lw = 7
+	durStyle := lipgloss.NewStyle().Width(6).Align(lipgloss.Left)
+	colStyle := lipgloss.NewStyle().Width(8).Align(lipgloss.Center)
 
-	durLabels := lipgloss.JoinHorizontal(lipgloss.Left,
-		col(lw, ""),
-		col(cw, dim.Render("15s")),
-		col(cw, dim.Render("30s")),
-		col(cw, dim.Render("60s")),
-		col(cw, dim.Render("120s")),
+	headerLabels := lipgloss.JoinHorizontal(lipgloss.Left,
+		durStyle.Render(""),
+		colStyle.Render(dim.Render("words")),
+		colStyle.Render(dim.Render("code")),
 	)
 
-	wordsLine := m.bestRow("words", m.prof.Best["words"], dim, val, hi)
-	codeLine := m.bestRow("code", m.prof.Best["code"], dim, val, hi)
+	bestRowVert := func(dur string, d int) string {
+		wStr := dim.Render("-")
+		if w, ok := m.prof.Best["words"][d]; ok {
+			wStr = val.Render(fmt.Sprintf("%.0f", w))
+		}
+		cStr := dim.Render("-")
+		if c, ok := m.prof.Best["code"][d]; ok {
+			cStr = val.Render(fmt.Sprintf("%.0f", c))
+		}
+
+		return lipgloss.JoinHorizontal(lipgloss.Left,
+			durStyle.Render(dim.Render(dur)),
+			colStyle.Render(wStr),
+			colStyle.Render(cStr),
+		)
+	}
 
 	bests := lipgloss.JoinVertical(lipgloss.Left,
 		hi.Render("personal bests"),
 		"",
-		durLabels,
-		wordsLine,
-		codeLine,
+		headerLabels,
+		bestRowVert("15s", 15),
+		bestRowVert("30s", 30),
+		bestRowVert("60s", 60),
+		bestRowVert("120s", 120),
 	)
 
 	cur := rank(m.prof.RecentAvg)
 	type tier struct {
-		name string
-		wpm  int
+		name  string
+		label string
 	}
 	tiers := []tier{
-		{"grandma", 0}, {"warrior", 30}, {"survivor", 50}, {"demon", 80}, {"phantom", 120},
+		{"grandma", "0-30"},
+		{"noob", "30-50"},
+		{"mid", "50-80"},
+		{"tryhard", "80-120"},
+		{"toofan", "120+"},
 	}
 
 	var rankLines []string
 	for _, t := range tiers {
-		line := fmt.Sprintf("%-8s %3d+", t.name, t.wpm)
+		// Pad name so prefix runs exactly to width 14 (total 16 with bullet).
+		// This guarantees that the labels start at the exact same visual column regardless of terminal rendering bugs.
+		paddedName := fmt.Sprintf("%-14s", t.name)
+		
+		// Left align the labels so their starting digits form a single vertical line
+		paddedLabel := fmt.Sprintf("%-6s", t.label)
+
+		var prefix, label string
 		if t.name == cur {
-			rankLines = append(rankLines, hi.Render("●")+" "+val.Render(line))
+			prefix = hi.Render("● ") + val.Render(paddedName)
+			label = val.Render(paddedLabel)
 		} else {
-			rankLines = append(rankLines, dim.Render("○ "+line))
+			prefix = dim.Render("● " + paddedName)
+			label = dim.Render(paddedLabel)
 		}
+
+		rankLines = append(rankLines, lipgloss.JoinHorizontal(lipgloss.Left, prefix, label))
 	}
 
 	ranks := lipgloss.JoinVertical(lipgloss.Left,
@@ -317,14 +380,14 @@ func (m model) viewProfile(p theme.Palette) string {
 
 	var histRows []string
 	header := lipgloss.JoinHorizontal(lipgloss.Left,
-		col(6, hi.Render("wpm")),
-		col(6, hi.Render("raw")),
-		col(6, hi.Render("acc")),
-		col(5, hi.Render("err")),
-		col(7, hi.Render("type")),
-		col(9, hi.Render("lang")),
-		col(6, hi.Render("dur")),
-		col(13, hi.Render("date")),
+		col(7, hi.Render("wpm")),
+		col(7, hi.Render("raw")),
+		col(12, hi.Render("accuracy")),
+		col(9, hi.Render("typos")),
+		col(9, hi.Render("mode")),
+		col(12, hi.Render("language")),
+		col(8, hi.Render("time")),
+		col(16, hi.Render("date")),
 	)
 	histRows = append(histRows, header, "")
 
@@ -350,14 +413,14 @@ func (m model) viewProfile(p theme.Palette) string {
 		}
 
 		row := lipgloss.JoinHorizontal(lipgloss.Left,
-			col(6, val.Render(fmt.Sprintf("%.0f", e.WPM))),
-			col(6, dim.Render(fmt.Sprintf("%.0f", e.Raw))),
-			col(6, dim.Render(fmt.Sprintf("%.0f%%", e.Acc))),
-			col(5, dim.Render(fmt.Sprintf("%d", e.Errors))),
-			col(7, dim.Render(modeType)),
-			col(9, dim.Render(modeLang)),
-			col(6, dim.Render(durStr)),
-			col(13, dim.Render(dstr)),
+			col(7, val.Render(fmt.Sprintf("%.0f", e.WPM))),
+			col(7, dim.Render(fmt.Sprintf("%.0f", e.Raw))),
+			col(12, dim.Render(fmt.Sprintf("%.0f%%", e.Acc))),
+			col(9, dim.Render(fmt.Sprintf("%d", e.Errors))),
+			col(9, dim.Render(modeType)),
+			col(12, dim.Render(modeLang)),
+			col(8, dim.Render(durStr)),
+			col(16, dim.Render(dstr)),
 		)
 		histRows = append(histRows, row)
 	}
@@ -383,9 +446,7 @@ func (m model) viewProfile(p theme.Palette) string {
 		title,
 		"",
 		topRow,
-		"",
 		histBox,
-		"",
 		heatBox,
 	)
 
@@ -401,12 +462,9 @@ func heatGrid(activity map[string]int, p theme.Palette, width int) string {
 	c1 := lipgloss.NewStyle().Foreground(p.Accent)
 	dim := lipgloss.NewStyle().Foreground(p.Foreground)
 
-	weeks := (width - 14) / 2
+	weeks := (width - 11) / 2
 	if weeks < 1 {
 		weeks = 1
-	}
-	if weeks > 26 {
-		weeks = 26
 	}
 
 	var rows []string
