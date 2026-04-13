@@ -1,184 +1,188 @@
 <div align="center">
 
-# ⛈ toofan
+# toofan
 
-**a typing test for your terminal**
+**A minimal, lightning-fast typing test for your terminal**  
+*Practice with english words or real code snippets. No browser, no account, everything stays local.*
 
-practice typing with real code · learn while you type · beat your pb
+<br>
 
-[![Go](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat-square&logo=go)](https://go.dev)
-[![License](https://img.shields.io/badge/License-MIT-bb9af7?style=flat-square)](LICENSE)
+<img src="assets/main.gif" alt="toofan demo" width="750">
+
+<br>
+
+[**Install**](#install) &nbsp;·&nbsp; [**FAQ**](#faq) &nbsp;·&nbsp; [**Contribute**](#contributing)
 
 </div>
 
 ---
 
-## features
+## Features
 
-- **two modes** — english words or real code snippets
-- **code lessons** — practical, hand-written snippets you actually learn from
-- **5 languages** — go, javascript, lua, shell, dart
-- **infinite mode** — no timer, type the full snippet at your own pace
-- **lesson picker** — choose what you want to practice, not just random code
-- **live wpm** — see your speed as you type
-- **personal bests** — tracked per duration and mode
-- **5 themes** — tokyonight, gruvbox, rosépine, kanagawa, sakura
-- **zero bloat** — just bubbletea + lipgloss, no other deps
+- **Two modes** : English words or real code snippets
+- **Hand-written code lessons** : Practical, self-contained examples that teach a concept while you type
+- **Infinite mode** : No timer, type the full snippet at your own pace
+- **Lesson picker** : Choose what to practice instead of getting random code
+- **Live WPM** : Speed updates in real time as you type
+- **Personal bests** : Tracked per duration and mode
+- **Activity map** : Track how consistent you are across days
+- **Backup and restore** : Save your data and import it on any machine
+- **Multiple themes** : Match your terminal aesthetic
+- Press `?` inside the app for all available keybindings
 
-## install
+## Code Snippets
 
-### go install
+Type real, practical code instead of random keywords. Each snippet is a small, self-contained example that builds muscle memory for `{}`, `=>`, `()`, `<-`, and all the symbols you actually use. Pick a lesson with `ctrl+o` or let it choose randomly. Set the timer to `∞` and the test ends when you finish the snippet.
+
+<div align="center">
+<img src="assets/code-snippets.png" width="560">
+</div>
+
+## Supported Languages (contribute to add more)
+
+Go, JavaScript, Lua, Shell, Dart, etc.
+
+<div align="center">
+<img src="assets/languages.png" width="560">
+</div>
+
+## Lessons (for code mode)
+
+Hand-written lessons organized by topic. Each one teaches a real concept while you type. Not generated, not random.
+
+<div align="center">
+<img src="assets/lession.png" width="560">
+</div>
+
+## Themes
+
+I've always wanted my terminal to look good and match my setup. So toofan comes with multiple themes you can cycle through to match your aesthetic. Hit `ctrl+t` to switch.
+
+<div align="center">
+<img src="assets/theme.png" width="560">
+</div>
+
+## Profile
+
+Your typing history, personal bests, rank, and activity map all in one place. Press `ctrl+p` to open it anytime.
+
+<div align="center">
+<img src="assets/profile-page.png" width="600">
+</div>
+
+## Install
+
 ```sh
-go install github.com/YOUR_USERNAME/toofan@latest
-```
-
-### build from source
-```sh
-git clone https://github.com/YOUR_USERNAME/toofan
+git clone https://github.com/vyrx/toofan.git
 cd toofan
-make build
+go build -o toofan .
 ./toofan
 ```
 
-### AUR (coming soon)
+You can run it directly with `./toofan` after building, or move it to your PATH to run from anywhere:
+
 ```sh
-yay -S toofan
+# All shells
+sudo cp toofan /usr/local/bin/
+
+# Or add the directory manually:
+
+# bash / zsh (add to ~/.bashrc or ~/.zshrc)
+export PATH="$PATH:/path/to/toofan"
+
+# fish
+fish_add_path /path/to/toofan
 ```
 
-## usage
+### Package Managers
 
-just run `toofan` and start typing. the test begins when you type the first character.
+Coming soon: AUR (paru/yay), Homebrew, Nix, one-line curl install.
 
-### keybindings
+## FAQ
 
-| key | action |
-|---|---|
-| `start typing` | begin test |
-| `backspace` | fix mistakes |
-| `esc` | restart current test |
-| `tab` | change duration (∞/15/30/60/120s) |
-| `ctrl+w` | toggle words ↔ code mode |
-| `ctrl+l` | change programming language |
-| `ctrl+o` | pick a specific lesson |
-| `ctrl+t` | change theme |
-| `ctrl+p` | open profile |
-| `ctrl+c` | quit |
+<details>
+<summary>How are stats calculated?</summary>
 
-### code mode
-
-code mode gives you real, practical code snippets to type — not random keywords. each snippet is a small, self-contained example that teaches a concept while building muscle memory for symbols like `{}`, `=>`, `()`, `<-`, etc.
-
-you can pick a specific lesson with `ctrl+o` or let it pick randomly. set the timer to `∞` (infinite) and the test ends when you finish the snippet, no time pressure.
-
-## how snippets work
-
-snippets live as **native source files** inside `internal/lang/data/<language>/lessons/`. this means they're real `.go`, `.js`, `.sh` files — not strings buried in JSON.
-
-each file has a single comment at the top for the topic heading:
-
-```js
-// Topic: Promises
-function loadData(url) {
-    return new Promise((resolve, reject) => {
-        // ... actual code the user types
-    });
-}
+```text
+raw      = total_chars / 5 / elapsed_minutes
+wpm      = (total_chars - uncorrected_errors) / 5 / elapsed_minutes
+accuracy = (total_chars - all_mistakes) / total_chars × 100
 ```
 
-the `// Topic:` line is extracted as a heading and shown in the UI. the user **only types the code** — comments are stripped.
+- **wpm** - your net speed. Every 5 characters count as one "word". Uncorrected mistakes are subtracted.
+- **accuracy** - counts every wrong keystroke, even if you corrected it with backspace.
+- **raw** - your gross speed before any penalty.
+- **errors** - press `e` on the results page to see exactly which words you mistyped.
+</details>
 
-## adding a language
+<details>
+<summary>How are ranks decided?</summary>
 
-1. create a directory: `internal/lang/data/yourname/lessons/`
-2. drop in snippet files with native extensions:
+Your rank is based on your average WPM over the last 10 word-mode tests:
 
-```python
-# Topic: List Comprehensions
-squares = [x ** 2 for x in range(10)]
-evens = [x for x in squares if x % 2 == 0]
-print(evens)
+```text
+grandma      # below 30 wpm
+noob         # 30 to 50 wpm
+mid          # 50 to 80 wpm
+tryhard      # 80 to 120 wpm
+toofan       # 120+ wpm
 ```
+</details>
 
-3. rebuild — it's automatically picked up. no code changes needed.
+<details>
+<summary>Where are my files stored?</summary>
 
-supported comment styles: `//` (go, js, dart), `#` (shell, python), `--` (lua)
+Everything lives in `~/.toofan/` as plain text files:
 
-## adding snippets to an existing language
+- `config.txt` : Your selected duration, mode, language, and theme
+- `results.txt` : Every test result (date, wpm, accuracy, duration, mode)
+- `pb.txt` : Your personal bests per mode and duration
+</details>
 
-just add a new file to that language's `lessons/` folder. name it something descriptive:
+<details>
+<summary>Can I backup my data?</summary>
 
-```
-internal/lang/data/javascript/lessons/08_closures.js
-```
+Yes. Press `ctrl+s` to save a backup and `ctrl+r` to restore from one. Backups are saved to `~/Toofan/` and can be moved between machines.
+</details>
 
-keep snippets short and practical. someone should be able to type the whole thing in 30-90 seconds and walk away understanding the concept.
+<details>
+<summary>Does it work offline?</summary>
 
-## config
+Yes. Everything runs locally and is embedded in the binary. No internet needed.
+</details>
 
-preferences are saved to `~/.toofan/config.txt` and persist between sessions:
-- selected duration
-- mode (words/code)
-- language
-- theme
+## Roadmap
 
-test results are appended to `~/.toofan/results.txt`:
-```
-2026-04-01 22:18 |  85 wpm | 97.5% |  30s | words
-2026-04-01 22:20 |  72 wpm | 94.2% |  60s | code:go
-```
+- [ ] More language support (python, rust, c, typescript, etc.)
+- [ ] Difficulty levels for english words
+- [ ] AUR, Homebrew, Nix, and curl install
+- [ ] Fix top pane alignment to match bottom panes in profile
+- [ ] Proper documentation for AI and contributors to understand the project
 
-## themes
+## Contributing
 
-| theme | style |
-|---|---|
-| tokyonight | calm blues and purples |
-| gruvbox | warm retro amber |
-| rosépine | elegant dark pink |
-| kanagawa | japanese ink tones |
-| sakura | soft cherry blossom |
+- New snippets : Drop a file in `internal/lang/data/<language>/lessons/` and rebuild
+- New languages : Just a folder with lesson files
+- New themes : One Go file with a color palette
+- Bug fixes and UX improvements
 
-## project structure
+## Dependencies
 
-```
-toofan/
-├── main.go                    # entry point
-├── internal/
-│   ├── model.go               # bubbletea model (state + controls)
-│   ├── game.go                # typing engine + stats + infinite mode
-│   ├── typing.go              # typing screen + topic display
-│   ├── picker.go              # language, lesson, theme, duration pickers
-│   ├── storage.go             # file persistence
-│   ├── theme/                 # color palettes
-│   └── lang/
-│       ├── lang.go            # snippet parser + word loader
-│       └── data/
-│           ├── english/
-│           │   └── words.txt  # word pool for word mode
-│           ├── go/lessons/    # go code snippets
-│           ├── javascript/lessons/
-│           ├── shell/lessons/
-│           ├── lua/lessons/
-│           └── dart/lessons/
-├── Makefile
-├── LICENSE
-└── README.md
-```
+- [Bubble Tea](https://github.com/charmbracelet/bubbletea) : TUI framework
+- [Lipgloss](https://github.com/charmbracelet/lipgloss) : Terminal styling
 
-## contributing
+<br>
 
-contributions welcome! especially:
-- **new snippets** — short, practical, real-world code. see [adding snippets](#adding-snippets-to-an-existing-language)
-- **new languages** — just a folder with lesson files
-- **new themes** — one small Go file
-- **bug fixes** and UX improvements
+<div align="center">
+<a href="https://www.star-history.com/#vyrx/toofan&type=Date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vyrx/toofan&type=Date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=vyrx/toofan&type=Date&legend=top-left" />
+   <img alt="toofan Star History Chart" src="https://api.star-history.com/svg?repos=vyrx/toofan&type=Date&legend=top-left" />
+ </picture>
+</a>
+</div>
 
-## dependencies
+---
 
-only two:
-- [bubbletea](https://github.com/charmbracelet/bubbletea) — TUI framework
-- [lipgloss](https://github.com/charmbracelet/lipgloss) — terminal styling
-
-## license
-
-[MIT](LICENSE)
-
+> **Enjoying toofan?** Consider dropping a ⭐ or sharing it online. A mention is always appreciated :)
