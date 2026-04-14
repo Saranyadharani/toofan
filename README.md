@@ -40,13 +40,23 @@ A personal overview of your typing speed history, personal bests across duration
 
 ## Installation
 
-### Quick Install (macOS & Linux)
+### curl (macOS & Linux)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vyrx-dev/toofan/master/install.sh | sh
 ```
 
-### Package Managers
-Coming soon: AUR, Homebrew, Nix.
+### AUR
+```bash
+paru -S toofan-bin
+```
+
+### Go
+```bash
+go install github.com/vyrx-dev/toofan@latest
+```
+
+### Homebrew / Nix / Ubuntu / Fedora
+Coming soon.
 
 ### Build from Source
 If you prefer building manually (requires Go):
