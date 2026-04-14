@@ -40,6 +40,8 @@ A personal overview of your typing speed history, personal bests across duration
 
 ## Installation
 
+⚠️ **Note:** Always take a backup (`ctrl+s`) before updating toofan.
+
 ### curl (macOS & Linux)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vyrx-dev/toofan/master/install.sh | sh
@@ -98,6 +100,29 @@ Everything lives in `~/.config/toofan/` as plain text files:
 <summary>Can I backup my data?</summary>
 
 Yes. Press `ctrl+s` to save a backup and `ctrl+r` to restore from one. Backups are saved to `~/.config/toofan/backups/` and can be moved between machines.
+</details>
+
+<details>
+<summary>How do I update toofan?</summary>
+
+The update process depends on how you installed it:
+
+**curl (Quick Install):**
+Just run the install command again. It will automatically download and replace the old binary.
+```bash
+curl -fsSL https://raw.githubusercontent.com/vyrx-dev/toofan/master/install.sh | sh
+```
+
+**Go:**
+```bash
+go install github.com/vyrx-dev/toofan@latest
+```
+
+**AUR:**
+Use your AUR helper to update the package:
+```bash
+paru -Syu toofan-bin
+```
 </details>
 
 <details>
