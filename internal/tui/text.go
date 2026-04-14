@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"toofan/internal/game"
-	"toofan/internal/theme"
+	"github.com/vyrx-dev/toofan/internal/game"
+	"github.com/vyrx-dev/toofan/internal/theme"
 )
 
 // colorText renders visible lines with typed/error/cursor/untyped styling

@@ -1,4 +1,4 @@
-module toofan
+module github.com/vyrx-dev/toofan
 
 go 1.24.2
 

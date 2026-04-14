@@ -11,7 +11,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"toofan/internal/theme"
+	"github.com/vyrx-dev/toofan/internal/theme"
 )
 
 type profileData struct {

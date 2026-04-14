@@ -5,9 +5,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"toofan/internal/game"
-	"toofan/internal/lang"
-	"toofan/internal/theme"
+	"github.com/vyrx-dev/toofan/internal/game"
+	"github.com/vyrx-dev/toofan/internal/lang"
+	"github.com/vyrx-dev/toofan/internal/theme"
 )
 
 // --- language picker ---

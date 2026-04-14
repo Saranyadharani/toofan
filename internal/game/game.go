@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"toofan/internal/lang"
+	"github.com/vyrx-dev/toofan/internal/lang"
 )
 
 type Stats struct {
