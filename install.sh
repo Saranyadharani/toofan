@@ -14,12 +14,18 @@ set -e
     fi
 
     echo "Fetching latest toofan..."
-    URL="https://github.com/vyrx-dev/toofan/releases/latest/download/toofan-${OS}-${ARCH}"
+    
+    LATEST_URL=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/vyrx-dev/toofan/releases/latest)
+    VERSION=${LATEST_URL##*/v}
 
-    if ! curl -sfL "$URL" -o /tmp/toofan; then
-        echo "Error: Release not found for ${OS}-${ARCH}."
+    URL="https://github.com/vyrx-dev/toofan/releases/latest/download/toofan_${VERSION}_${OS}_${ARCH}.tar.gz"
+
+    if ! curl -sfL "$URL" -o /tmp/toofan.tar.gz; then
+        echo "Error: Release not found at $URL"
         exit 1
     fi
+    
+    tar -xzf /tmp/toofan.tar.gz -C /tmp toofan
     chmod +x /tmp/toofan
 
     INSTALL_DIR="$HOME/.local/bin"
