@@ -41,7 +41,7 @@ func (m model) handleResults(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.game = game.New(m.duration, m.mode, m.lang)
+	m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
 	m.showingErrors = false
 	m.active = screenTyping
 	return m, nil

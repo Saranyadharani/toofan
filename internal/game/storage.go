@@ -100,8 +100,8 @@ func SavePB(duration int, mode string, wpm float64) {
 	}
 }
 
-func LoadConfig() (duration int, mode string, language string, themeName string) {
-	duration, mode, language, themeName = 30, "words", "go", "tokyonight"
+func LoadConfig() (duration int, mode string, language string, difficulty string, themeName string) {
+	duration, mode, language, difficulty, themeName = 30, "words", "go", "easy", "tokyonight"
 
 	path := filepath.Join(dataDir, "config.txt")
 	f, err := os.Open(path)
@@ -123,6 +123,8 @@ func LoadConfig() (duration int, mode string, language string, themeName string)
 			mode = parts[1]
 		case "lang":
 			language = parts[1]
+		case "difficulty":
+			difficulty = parts[1]
 		case "theme":
 			themeName = parts[1]
 		}
@@ -130,7 +132,7 @@ func LoadConfig() (duration int, mode string, language string, themeName string)
 	return
 }
 
-func SaveConfig(duration int, mode string, language string, themeName string) {
+func SaveConfig(duration int, mode string, language string, difficulty string, themeName string) {
 	os.MkdirAll(dataDir, 0755)
 	f, err := os.Create(filepath.Join(dataDir, "config.txt"))
 	if err != nil {
@@ -138,8 +140,8 @@ func SaveConfig(duration int, mode string, language string, themeName string) {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, "duration=%d\nmode=%s\nlang=%s\ntheme=%s\n",
-		duration, mode, language, themeName)
+	fmt.Fprintf(f, "duration=%d\nmode=%s\nlang=%s\ndifficulty=%s\ntheme=%s\n",
+		duration, mode, language, difficulty, themeName)
 }
 
 // SplitBundle parses a bundled backup file (sections marked with "### filename")

@@ -148,7 +148,7 @@ Yes. Everything runs locally and is embedded in the binary. No internet needed.
 - [x] Curl script installation (macOS & Linux)
 - [x] Proper documentation for AI and contributors
 - [ ] More language support (python, rust, c, typescript, etc.)
-- [ ] Difficulty levels for english words
+- [x] Difficulty levels for english words
 - [ ] AUR, Homebrew, Nix packages
 - [ ] Fix top pane alignment to match bottom panes in profile
 

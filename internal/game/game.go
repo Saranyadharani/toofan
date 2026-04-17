@@ -24,6 +24,7 @@ type Game struct {
 	started   bool
 	duration  int
 	CodeMode  bool // true = snippet-based typing, false = standard words
+	difficulty string
 
 	elapsed   time.Duration
 	lastTyped time.Time
@@ -39,19 +40,20 @@ func (g *Game) Duration() int        { return g.duration }
 func (g *Game) Elapsed() time.Duration { return g.elapsed }
 func (g *Game) SetText(s string)     { g.text = normalizeTabs(s) }
 
-func New(duration int, mode string, language string) *Game {
+func New(duration int, mode string, language string, difficulty string) *Game {
 	g := &Game{
 		duration:  duration, // 0 means infinite mode (tied to length of snippet)
 		errors:    make(map[int]bool),
 		mistakeAt: make(map[int]bool),
+		difficulty: difficulty,
 	}
 
 	if mode == "code" {
 		g.CodeMode = true
-		g.Snippet = lang.RandomSnippet(language)
+		g.Snippet = lang.RandomSnippet(language, difficulty)
 		g.text = normalizeTabs(g.Snippet.Content)
 	} else {
-		words := lang.RandomWords("english", 200)
+		words := lang.RandomWords(language, difficulty, 200)
 		g.text = strings.Join(words, " ")
 	}
 
@@ -249,14 +251,15 @@ func (g *Game) ErrorWords() []string {
 	return result
 }
 
-func (g *Game) Reset(mode string, language string) {
+func (g *Game) Reset(mode string, language string, difficulty string) {
+	g.difficulty = difficulty
 	if mode == "code" {
 		g.CodeMode = true
-		g.Snippet = lang.RandomSnippet(language)
+		g.Snippet = lang.RandomSnippet(language, difficulty)
 		g.text = normalizeTabs(g.Snippet.Content)
 	} else {
 		g.CodeMode = false
-		words := lang.RandomWords("english", 200)
+		words := lang.RandomWords(language, difficulty, 200)
 		g.text = strings.Join(words, " ")
 	}
 	g.input = ""

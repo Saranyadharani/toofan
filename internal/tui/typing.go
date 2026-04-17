@@ -14,7 +14,7 @@ import (
 func (m model) handleTyping(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
-		m.game.Reset(m.mode, m.lang)
+		m.game.Reset(m.mode, m.lang, m.difficulty)
 
 	case "tab":
 		m.pickingDur = true
@@ -26,6 +26,18 @@ func (m model) handleTyping(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case "ctrl+d":
+		if m.mode == "words" {
+			m.pickingDifficulty = true
+			m.diffCur = 0
+			for i, d := range difficulties {
+				if d == m.difficulty {
+					m.diffCur = i
+				}
+			}
+		}
+		return m, nil
+
 	case "ctrl+w":
 		if !m.game.Started() {
 			if m.mode == "words" {
@@ -33,7 +45,7 @@ func (m model) handleTyping(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			} else {
 				m.mode = "words"
 			}
-			m.game = game.New(m.duration, m.mode, m.lang)
+			m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
 			m.save()
 		}
 
@@ -56,7 +68,7 @@ func (m model) handleTyping(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "ctrl+t":
 		if m.game.Started() {
-			m.game.Reset(m.mode, m.lang)
+			m.game.Reset(m.mode, m.lang, m.difficulty)
 		}
 		m.pickingTheme = true
 		m.themeCur = 0
@@ -106,6 +118,9 @@ func (m model) viewTyping(p theme.Palette) string {
 	}
 	if m.pickingTheme {
 		return m.viewThemePicker(p)
+	}
+	if m.pickingDifficulty {
+		return m.viewDifficultyPicker(p)
 	}
 
 	dim := lipgloss.NewStyle().Foreground(p.Foreground)

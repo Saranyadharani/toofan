@@ -25,7 +25,7 @@ func (m model) handlePicker(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "enter":
 		m.lang = lang.Names[m.langCur]
 		m.pickingLang = false
-		m.game = game.New(m.duration, m.mode, m.lang)
+		m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
 		m.save()
 	case "esc":
 		m.pickingLang = false
@@ -54,7 +54,7 @@ func (m model) handleLessonPicker(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	case "enter":
 		m.pickingLesson = false
-		m.game = game.New(m.duration, m.mode, m.lang)
+		m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
 		if m.lessonCur > 0 && m.lessonCur <= len(snippets) {
 			m.game.Snippet = snippets[m.lessonCur-1]
 			m.game.SetText(m.game.Snippet.Content)
@@ -98,7 +98,7 @@ func (m model) handleThemePicker(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.save()
 	case "esc":
 		// revert to saved theme
-		_, _, _, th := game.LoadConfig()
+		_, _, _, _, th := game.LoadConfig()
 		theme.Current = theme.ByName(th)
 		m.pickingTheme = false
 	}
@@ -126,6 +126,12 @@ func (m model) viewThemePicker(p theme.Palette) string {
 func (m model) viewDurPicker(p theme.Palette) string {
 	durs := []string{"∞", "15", "30", "60", "120"}
 	return renderList(p, "time", durs, nil, m.durCur)
+}
+
+// --- difficulty picker ---
+
+func (m model) viewDifficultyPicker(p theme.Palette) string {
+	return renderList(p, "difficulty", difficulties, nil, m.diffCur)
 }
 
 // clean list — no borders, just highlighted selection, padded uniformly

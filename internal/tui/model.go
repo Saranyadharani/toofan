@@ -11,6 +11,7 @@ import (
 )
 
 var durations = []int{0, 15, 30, 60, 120}
+var difficulties = []string{"easy", "medium", "hard"}
 
 type screen int
 
@@ -26,6 +27,7 @@ type model struct {
 	duration int
 	mode     string // "words" or "code"
 	lang     string
+	difficulty string
 
 	width, height int
 
@@ -37,6 +39,8 @@ type model struct {
 	lessonCur     int
 	pickingTheme  bool
 	themeCur      int
+	pickingDifficulty bool
+	diffCur           int
 	showHelp      bool
 
 	result        game.Stats
@@ -56,14 +60,15 @@ type model struct {
 }
 
 func New() model {
-	duration, mode, language, th := game.LoadConfig()
+	duration, mode, language, difficulty, th := game.LoadConfig()
 	theme.Current = theme.ByName(th)
 
 	return model{
-		game:     game.New(duration, mode, language),
+		game:     game.New(duration, mode, language, difficulty),
 		duration: duration,
 		mode:     mode,
 		lang:     language,
+		difficulty: difficulty,
 	}
 }
 
@@ -184,7 +189,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				m.duration = durations[m.durCur]
 				m.pickingDur = false
-				m.game = game.New(m.duration, m.mode, m.lang)
+				m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
 				m.save()
 				return m, nil
 			case "esc":
@@ -193,6 +198,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			default:
 				m.pickingDur = false
 				// fallthrough to handleTyping so the key is typed
+			}
+		}
+		if m.pickingDifficulty {
+			switch msg.String() {
+			case "up", "k", "left", "h":
+				if m.diffCur > 0 {
+					m.diffCur--
+				}
+				return m, nil
+			case "down", "j", "right", "l":
+				if m.diffCur < len(difficulties)-1 {
+					m.diffCur++
+				}
+				return m, nil
+			case "enter":
+				m.difficulty = difficulties[m.diffCur]
+				m.pickingDifficulty = false
+				m.game = game.New(m.duration, m.mode, m.lang, m.difficulty)
+				m.save()
+				return m, nil
+			case "esc":
+				m.pickingDifficulty = false
+				return m, nil
+			default:
+				m.pickingDifficulty = false
 			}
 		}
 		if m.pickingLang {
@@ -256,7 +286,7 @@ func (m model) View() string {
 }
 
 func (m model) save() {
-	game.SaveConfig(m.duration, m.mode, m.lang, theme.Current.Name)
+	game.SaveConfig(m.duration, m.mode, m.lang, m.difficulty, theme.Current.Name)
 }
 
 func nextDur(cur int) int {

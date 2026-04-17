@@ -19,6 +19,9 @@ type Snippet struct {
 type langData struct {
 	Name     string
 	Words    []string
+	EasyWords   []string
+	MediumWords []string
+	HardWords   []string
 	Snippets []Snippet
 }
 
@@ -93,9 +96,24 @@ func init() {
 		name := e.Name()
 		ld := &langData{Name: name}
 
-		// Read words.txt
-		if raw, err := fs.ReadFile(dataFS, "data/"+name+"/words.txt"); err == nil {
+		// Read easy.txt
+		if raw, err := fs.ReadFile(dataFS, "data/"+name+"/easy.txt"); err == nil {
 			words := strings.Fields(string(raw))
+			ld.EasyWords = append(ld.EasyWords, words...)
+			ld.Words = append(ld.Words, words...)
+		}
+
+		// Read medium.txt
+		if raw, err := fs.ReadFile(dataFS, "data/"+name+"/medium.txt"); err == nil {
+			words := strings.Fields(string(raw))
+			ld.MediumWords = append(ld.MediumWords, words...)
+			ld.Words = append(ld.Words, words...)
+		}
+
+		// Read hard.txt
+		if raw, err := fs.ReadFile(dataFS, "data/"+name+"/hard.txt"); err == nil {
+			words := strings.Fields(string(raw))
+			ld.HardWords = append(ld.HardWords, words...)
 			ld.Words = append(ld.Words, words...)
 		}
 
@@ -122,30 +140,46 @@ func init() {
 }
 
 // RandomWords picks random words for the word-mode typing test
-func RandomWords(name string, count int) []string {
+func RandomWords(name string, difficulty string, count int) []string {
 	ld, ok := languages[name]
 	if !ok || len(ld.Words) == 0 {
 		ld = languages["english"]
 	}
 
-	if len(ld.Words) == 0 {
+	var wordList []string
+	switch difficulty {
+	case "easy":
+		wordList = ld.EasyWords
+	case "medium":
+		wordList = ld.MediumWords
+	case "hard":
+		wordList = ld.HardWords
+	default:
+		wordList = ld.Words
+	}
+
+	if len(wordList) == 0 {
+		wordList = ld.Words // fallback to general words
+	}
+
+	if len(wordList) == 0 {
 		return []string{"hello", "world"}
 	}
 
 	out := make([]string, count)
 	for i := range out {
-		out[i] = ld.Words[rand.Intn(len(ld.Words))]
+		out[i] = wordList[rand.Intn(len(wordList))]
 	}
 	return out
 }
 
 // RandomSnippet picks a random code snippet for code-mode typing.
-func RandomSnippet(name string) Snippet {
+func RandomSnippet(name string, difficulty string) Snippet {
 	ld, ok := languages[name]
 	if !ok || len(ld.Snippets) == 0 {
 		return Snippet{
 			Topic:   "Fallback Words",
-			Content: strings.Join(RandomWords(name, 50), " "),
+			Content: strings.Join(RandomWords(name, difficulty, 50), " "),
 		}
 	}
 
