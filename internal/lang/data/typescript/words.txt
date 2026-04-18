@@ -1,0 +1,1 @@
+interface class extends implements private protected public readonly static async await constructor super this typeof keyof never unknown any void null undefined true false if else for while switch case break continue return throw try catch finally new instanceof
