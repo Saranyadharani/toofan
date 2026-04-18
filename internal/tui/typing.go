@@ -226,6 +226,7 @@ func (m model) viewHelp(p theme.Palette) string {
 		val.Render("ctrl+o") + dim.Render("    change lesson (code mode only)"),
 		val.Render("ctrl+t") + dim.Render("    change theme"),
 		val.Render("ctrl+p") + dim.Render("    open profile"),
+		val.Render("ctrl+d") + dim.Render("    change difficulty (words mode only)"),
 		val.Render("tab") + dim.Render("       change duration & restart"),
 		val.Render("esc") + dim.Render("       restart test immediately"),
 		val.Render("e") + dim.Render("         view error words (results screen)"),

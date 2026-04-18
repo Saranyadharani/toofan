@@ -150,7 +150,7 @@ Yes. Everything runs locally and is embedded in the binary. No internet needed.
 - [ ] More language support (python, rust, c, typescript, etc.)
 - [x] Difficulty levels for english words
 - [ ] AUR, Homebrew, Nix packages
-- [ ] Fix top pane alignment to match bottom panes in profile
+- [x] Fix top pane alignment to match bottom panes in profile
 
 ## Contributing
 

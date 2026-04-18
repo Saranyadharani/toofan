@@ -15,11 +15,11 @@ import (
 )
 
 type profileData struct {
-	Tests     int
-	Time      time.Duration
-	Best      map[string]map[int]float64 // mode -> dur -> wpm
-	Recent    []testEntry
-	Activity  map[string]int
+	Tests         int
+	Time          time.Duration
+	Best          map[string]map[int]float64 // mode -> dur -> wpm
+	Recent        []testEntry
+	Activity      map[string]int
 	RecentAvg     float64
 	RecentCodeAvg float64
 }
@@ -318,7 +318,7 @@ func (m model) viewProfile(p theme.Palette) string {
 		// Pad name so prefix runs exactly to width 14 (total 16 with bullet).
 		// This guarantees that the labels start at the exact same visual column regardless of terminal rendering bugs.
 		paddedName := fmt.Sprintf("%-14s", t.name)
-		
+
 		// Left align the labels so their starting digits form a single vertical line
 		paddedLabel := fmt.Sprintf("%-6s", t.label)
 
