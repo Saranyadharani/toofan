@@ -200,7 +200,7 @@ func (m model) viewProfile(p theme.Palette) string {
 	if m.width > 0 && m.width < 92 {
 		fullWidth = m.width - 6
 	}
-	paneWidth := (fullWidth - 2) / 3 // 2 gaps of 1 char each
+	paneWidth := (fullWidth - 4) / 3 // 2 gaps of 1 char each
 
 	paneStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
