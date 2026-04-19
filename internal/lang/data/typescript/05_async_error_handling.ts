@@ -2,14 +2,16 @@
 
 async function fetchWithTimeout<T>(
     url: string,
-    timeoutMs: number
+    ms: number
 ): Promise<T> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), ms);
     try {
-        const response = await fetch(url, { signal: controller.signal });
-        return await response.json();
+        const res = await fetch(url, {
+            signal: ctrl.signal,
+        });
+        return await res.json();
     } finally {
-        clearTimeout(timeoutId);
+        clearTimeout(id);
     }
 }

@@ -1,5 +1,16 @@
 // Topic: Mapped and Conditional Types
 
-type Nullable<T> = { [P in keyof T]: T[P] | null };
+type FormErrors<T> = {
+    [K in keyof T]?: string;
+};
 
-type IsArray<T> = T extends any[] ? true : false;
+type User = { name: string; email: string; age: number };
+
+const errors: FormErrors<User> = {
+    name: "required",
+    email: "invalid format",
+};
+
+type NonNullableFields<T> = {
+    [K in keyof T]: NonNullable<T[K]>;
+};

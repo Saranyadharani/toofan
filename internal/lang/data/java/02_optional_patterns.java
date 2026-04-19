@@ -1,8 +1,18 @@
-// Topic: Optional Patterns
+// Topic: Optional Chaining
 
 import java.util.Optional;
 
-String value = Optional.ofNullable(getData())
-    .filter(s -> !s.isEmpty())
-    .map(String::trim)
-    .orElseThrow(() -> new IllegalStateException("Invalid data"));
+String city = Optional.ofNullable(getUser())
+    .map(User::getAddress)
+    .map(Address::getCity)
+    .filter(c -> !c.isEmpty())
+    .orElse("Unknown");
+
+Optional<Integer> parsed = Optional.ofNullable(input)
+    .filter(s -> s.matches("\\d+"))
+    .map(Integer::parseInt);
+
+parsed.ifPresentOrElse(
+    val -> System.out.println("Got: " + val),
+    () -> System.out.println("No valid number")
+);
